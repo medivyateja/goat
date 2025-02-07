@@ -18,7 +18,7 @@ A modern web application built with Express.js and styled using Tailwind CSS.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/goat.git
+git clone https://github.com/medivyateja/goat.git
 
 # Navigate to project directory
 cd goat
