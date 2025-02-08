@@ -81,45 +81,6 @@ router.post('/get-account-info', async (req, res) => {
     }
 });
 
-// Get token accounts
-router.post('/get-token-accounts', async (req, res) => {
-    try {
-        const { wallet } = req.body;
-        
-        if (!wallet) {
-            return res.status(400).json({
-                success: false,
-                message: 'Wallet address is required'
-            });
-        }
-
-        const pubKey = new PublicKey(wallet);
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(pubKey, {
-            programId: TOKEN_PROGRAM_ID
-        });
-
-        const formattedTokens = tokenAccounts.value.map(account => ({
-            mint: account.account.data.parsed.info.mint,
-            tokenAddress: account.pubkey.toString(),
-            amount: account.account.data.parsed.info.tokenAmount.uiAmount,
-            decimals: account.account.data.parsed.info.tokenAmount.decimals,
-            uiAmount: account.account.data.parsed.info.tokenAmount.uiAmountString
-        }));
-
-        res.json({
-            success: true,
-            tokens: formattedTokens
-        });
-    } catch (error) {
-        console.error('Error getting token accounts:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to get token accounts',
-            error: error.message
-        });
-    }
-});
-
 // Disconnect wallet
 router.post('/disconnect', async (req, res) => {
     try {
