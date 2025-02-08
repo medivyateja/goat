@@ -33,26 +33,6 @@ router.get('/session-info', (req, res) => {
     });
 });
 
-// Vote route
-router.post('/vote', (req, res) => {
-    const { choice } = req.body;
-    
-    if (!req.session.wallet) {
-        return res.status(403).json({
-            success: false,
-            message: 'Please connect your wallet to vote'
-        });
-    }
-
-    // Store the vote in session
-    req.session.vote = choice;
-    
-    res.json({
-        success: true,
-        message: `Successfully voted for ${choice}`
-    });
-});
-
 // Get voting stats
 router.get('/voting-stats', (req, res) => {
     // In a real application, you would fetch this from a database
