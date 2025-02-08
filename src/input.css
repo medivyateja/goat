@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#mobileWalletInfo {
+    transition: all 0.3s ease;
+}
+
+/* Mobile connect button styles */
+#mobileConnectButton {
+    transition: all 0.3s ease;
+}
+
+/* Mobile menu transition */
+#mobileMenu {
+    transition: all 0.3s ease;
+}
+
+/* Connected state styles for mobile */
+.mobile-connected #mobileConnectButton {
+    background-color: #1a365d;
+}
+
+.mobile-connected #mobileWalletInfo {
+    opacity: 1;
+}
+
+/* Error state styles */
+.wallet-error {
+    color: #EF4444;
+}

@@ -1,8 +1,151 @@
-<%- include('partials/header') %>
+<%- include('partials/header', {title: "Who's the GOAT?"}) %>
 
-<main class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold text-blue-600">Welcome to Express + Tailwind!</h1>
-    <p class="mt-4 text-gray-600">This is your new site with Tailwind CSS styling.</p>
-</main>
+    <!-- Hero Section -->
+    <section id="hero" class="pt-32 pb-16 relative">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative">
+            <div class="text-center">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 text-white">
+                    Who's the <span class="text-red-600">GOAT</span>?
+                </h1>
+                <p class="text-xl text-white mb-8 max-w-2xl mx-auto">
+                    Join the ultimate debate. Hold $GOAT tokens to vote for either Ronaldo or Messi.
+                    1 Billion supply. Your token, your voice.
+                </p>
+                <div class="flex gap-4 justify-center">
+                    <a href="#how-to-buy" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
+                        Buy $GOAT
+                    </a>
+                    <a href="#vote" class="px-8 py-3 rounded-full border-2 border-red-600 text-white font-semibold hover:bg-red-600/10 transition-colors">
+                        Cast Your Vote
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vote Section -->
+    <section id="vote" class="py-24 bg-red-600/5 border-y-2 border-red-600">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">Cast Your Vote</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Ronaldo Card -->
+                <div class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
+                    <img src="/api/placeholder/400/400" alt="Ronaldo" class="w-full rounded-xl mb-4">
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">Cristiano Ronaldo</h3>
+                    <ul class="text-white space-y-2">
+                        <li>• 5 Champions League titles</li>
+                        <li>• 5 Ballon d'Or awards</li>
+                        <li>• 850+ career goals</li>
+                    </ul>
+                    <div class="mt-4 text-center">
+                        <div class="text-white text-xl font-bold">45%</div>
+                    </div>
+                </div>
+                <!-- Messi Card -->
+                <div class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
+                    <img src="/api/placeholder/400/400" alt="Messi" class="w-full rounded-xl mb-4">
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">Lionel Messi</h3>
+                    <ul class="text-white space-y-2">
+                        <li>• World Cup Champion</li>
+                        <li>• 8 Ballon d'Or awards</li>
+                        <li>• 800+ career goals</li>
+                    </ul>
+                    <div class="mt-4 text-center">
+                        <div class="text-white text-xl font-bold">55%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-white">
+                <p class="text-sm">* Connect your wallet and hold $GOAT tokens to cast your vote</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tokenomics Section -->
+    <section id="tokenomics" class="py-24">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">Tokenomics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">Supply</h3>
+                    <p class="text-white">1,000,000,000 $GOAT</p>
+                    <div class="mt-4">
+                        <p class="text-gray-300 text-sm">Fixed supply with no minting function</p>
+                    </div>
+                </div>
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">Distribution</h3>
+                    <ul class="text-white space-y-2">
+                        <li>• 40% Public Sale</li>
+                        <li>• 30% Liquidity</li>
+                        <li>• 20% Marketing</li>
+                        <li>• 10% Team (Locked)</li>
+                    </ul>
+                </div>
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">Features</h3>
+                    <ul class="text-white space-y-2">
+                        <li>• 2% Reflection to Holders</li>
+                        <li>• Anti-Bot Measures</li>
+                        <li>• Locked Liquidity</li>
+                        <li>• Voting Power</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Buy Section -->
+    <section id="how-to-buy" class="py-24 bg-red-600/5 border-y-2 border-red-600">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">How to Buy</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">1. Get a Wallet</h3>
+                    <p class="text-white">Download Phantom or any Solana wallet of your choice</p>
+                    <a href="https://phantom.app/" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block text-red-600 hover:text-red-500">
+                        Download Phantom →
+                    </a>
+                </div>
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">2. Get SOL</h3>
+                    <p class="text-white">Buy SOL from any major exchange and transfer to your wallet</p>
+                    <div class="mt-4 space-y-2">
+                        <a href="https://www.binance.com" target="_blank" rel="noopener noreferrer" class="block text-red-600 hover:text-red-500">Binance →</a>
+                        <a href="https://www.coinbase.com" target="_blank" rel="noopener noreferrer" class="block text-red-600 hover:text-red-500">Coinbase →</a>
+                    </div>
+                </div>
+                <div class="p-6 rounded-2xl border-theme bg-blue-900">
+                    <h3 class="text-xl font-bold text-white mb-4">3. Swap for $GOAT</h3>
+                    <p class="text-white">Use Raydium or Jupiter to swap SOL for $GOAT tokens</p>
+                    <div class="mt-4 space-y-2">
+                        <a href="https://raydium.io" target="_blank" rel="noopener noreferrer" class="block text-red-600 hover:text-red-500">Raydium →</a>
+                        <a href="https://jup.ag" target="_blank" rel="noopener noreferrer" class="block text-red-600 hover:text-red-500">Jupiter →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section id="community" class="py-24">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-white">Join Our Community</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <a href="#" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-4">Twitter</h3>
+                    <p class="text-gray-300">Follow us for the latest updates</p>
+                </a>
+                <a href="#" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-4">Telegram</h3>
+                    <p class="text-gray-300">Join our active community</p>
+                </a>
+                <a href="#" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
+                    <h3 class="text-xl font-bold text-white mb-4">Discord</h3>
+                    <p class="text-gray-300">Participate in discussions</p>
+                </a>
+            </div>
+        </div>
+    </section>
 
 <%- include('partials/footer') %>
