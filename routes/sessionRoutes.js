@@ -10,6 +10,20 @@ router.get('/', (req, res) => {
     });
 });
 
+router.get('/monitor', (req, res) => {
+    res.render('monitor', {
+        visitCount: req.session.visitCount,
+        lastVisit: req.session.lastVisit,
+    });
+});
+
+router.get('/download-app', (req, res) => {
+    res.render('download-app', {
+        visitCount: req.session.visitCount,
+        lastVisit: req.session.lastVisit,
+    });
+});
+
 // Get session info
 router.get('/session-info', (req, res) => {
     res.json({
