@@ -58,9 +58,6 @@
 </section>
 
 <script>
-// Store current wallet address
-let currentWalletAddress = null;
-
 function isWalletConnected() {
     return window.solana && window.solana.isConnected;
 }
@@ -74,49 +71,26 @@ function hideLoading() {
     document.getElementById('loadingSpinner').classList.add('hidden');
 }
 
-function resetBalance() {
-    document.getElementById('userGoatBalance').textContent = '0';
-    document.getElementById('voteButton').disabled = true;
-    hideLoading();
-}
-
-async function checkWalletChange() {
-    if (!isWalletConnected()) {
-        currentWalletAddress = null;
-        resetBalance();
-        return false;
-    }
-
-    const newWalletAddress = window.solana.publicKey.toString();
-    if (newWalletAddress !== currentWalletAddress) {
-        currentWalletAddress = newWalletAddress;
-        return true;
-    }
-    return false;
-}
-
 async function fetchAndDisplayTokens() {
     if (!isWalletConnected()) {
         console.log('Waiting for wallet connection...');
-        resetBalance();
-        return;
-    }
-
-    const walletChanged = await checkWalletChange();
-    if (!walletChanged && currentWalletAddress) {
-        // If wallet hasn't changed and we already have an address, don't fetch again
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
+        setTimeout(fetchAndDisplayTokens, 1000);
         return;
     }
 
     showLoading();
 
     try {
+        const walletAddress = window.solana.publicKey.toString();
+        
         const response = await fetch('/wallet/get-tokens', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ wallet: currentWalletAddress })
+            body: JSON.stringify({ wallet: walletAddress })
         });
 
         const data = await response.json();
@@ -141,33 +115,27 @@ async function fetchAndDisplayTokens() {
         }
     } catch (error) {
         console.error('Error:', error);
-        resetBalance();
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
     } finally {
         hideLoading();
     }
 }
 
-// Check for wallet changes periodically
-setInterval(fetchAndDisplayTokens, 1000);
-
 // Initialize when DOM loads
-document.addEventListener('DOMContentLoaded', fetchAndDisplayTokens);
+document.addEventListener('DOMContentLoaded', () => {
+    if (isWalletConnected()) {
+        fetchAndDisplayTokens();
+    }
+});
 
 // Listen for wallet connection events
 if (window.solana) {
-    window.solana.on('connect', () => {
-        currentWalletAddress = null; // Reset current address to force refresh
-        fetchAndDisplayTokens();
-    });
-    
+    window.solana.on('connect', fetchAndDisplayTokens);
     window.solana.on('disconnect', () => {
-        currentWalletAddress = null;
-        resetBalance();
-    });
-
-    window.solana.on('accountChanged', () => {
-        currentWalletAddress = null; // Reset current address to force refresh
-        fetchAndDisplayTokens();
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
+        hideLoading();
     });
 }
 </script>
