@@ -34,10 +34,108 @@
         </div>
         <div class="mt-8 text-center">
             <div class="text-white text-xl mb-6">Total Votes: <span class="font-bold">124,567</span></div>
-            <button class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors mb-4">
+            
+            <!-- GOAT Balance with Loading State -->
+            <div class="text-white text-xl mb-6">
+                Your $GOAT Balance: 
+                <span id="balanceWrapper" class="inline-flex items-center">
+                    <span id="userGoatBalance" class="font-bold">0</span>
+                    <span id="loadingSpinner" class="hidden ml-2">
+                        <svg class="animate-spin h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </span>
+            </div>
+
+            <button id="voteButton" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 Cast Your Vote
             </button>
             <p class="text-sm text-white">* Connect your wallet and hold $GOAT tokens to cast your vote</p>
         </div>
     </div>
 </section>
+
+<script>
+function isWalletConnected() {
+    return window.solana && window.solana.isConnected;
+}
+
+function showLoading() {
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+    document.getElementById('userGoatBalance').textContent = '...';
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+}
+
+async function fetchAndDisplayTokens() {
+    if (!isWalletConnected()) {
+        console.log('Waiting for wallet connection...');
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
+        setTimeout(fetchAndDisplayTokens, 1000);
+        return;
+    }
+
+    showLoading();
+
+    try {
+        const walletAddress = window.solana.publicKey.toString();
+        
+        const response = await fetch('/wallet/get-tokens', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ wallet: walletAddress })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Check for GOAT token
+            const goatToken = data.tokens.find(token => 
+                token.mint === '<%= process.env.YOUR_GOAT_TOKEN_MINT_ADDRESS %>'
+            );
+            
+            // Update GOAT balance display
+            const balanceElement = document.getElementById('userGoatBalance');
+            const voteButton = document.getElementById('voteButton');
+            
+            if (goatToken) {
+                balanceElement.textContent = goatToken.balance;
+                voteButton.disabled = false;
+            } else {
+                balanceElement.textContent = '0';
+                voteButton.disabled = true;
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
+    } finally {
+        hideLoading();
+    }
+}
+
+// Initialize when DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+    if (isWalletConnected()) {
+        fetchAndDisplayTokens();
+    }
+});
+
+// Listen for wallet connection events
+if (window.solana) {
+    window.solana.on('connect', fetchAndDisplayTokens);
+    window.solana.on('disconnect', () => {
+        document.getElementById('userGoatBalance').textContent = '0';
+        document.getElementById('voteButton').disabled = true;
+        hideLoading();
+    });
+}
+</script>
