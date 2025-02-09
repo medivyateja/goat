@@ -49,9 +49,14 @@
                 </span>
             </div>
 
-            <button id="voteButton" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                Cast Your Vote
-            </button>
+            <div class="flex justify-center gap-4">
+                <button id="voteButton" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Cast Your Vote
+                </button>
+                <a id="buyGoatButton" href="#how-to-buy" class="hidden px-8 py-3 rounded-full bg-blue-900 border-2 border-red-600 text-white font-semibold hover:bg-blue-700 transition-colors mb-4">
+                    Buy $GOAT
+                </a>
+            </div>
             <p class="text-sm text-white">* Connect your wallet and hold $GOAT tokens to cast your vote</p>
         </div>
     </div>
@@ -77,7 +82,21 @@ function hideLoading() {
 function resetBalance() {
     document.getElementById('userGoatBalance').textContent = '0';
     document.getElementById('voteButton').disabled = true;
+    document.getElementById('buyGoatButton').classList.remove('hidden');
     hideLoading();
+}
+
+function updateButtonsVisibility(goatBalance) {
+    const voteButton = document.getElementById('voteButton');
+    const buyGoatButton = document.getElementById('buyGoatButton');
+    
+    if (goatBalance > 0) {
+        voteButton.disabled = false;
+        buyGoatButton.classList.add('hidden');
+    } else {
+        voteButton.disabled = true;
+        buyGoatButton.classList.remove('hidden');
+    }
 }
 
 async function checkWalletChange() {
@@ -129,14 +148,14 @@ async function fetchAndDisplayTokens() {
             
             // Update GOAT balance display
             const balanceElement = document.getElementById('userGoatBalance');
-            const voteButton = document.getElementById('voteButton');
             
             if (goatToken) {
-                balanceElement.textContent = goatToken.balance;
-                voteButton.disabled = false;
+                const balance = parseFloat(goatToken.balance);
+                balanceElement.textContent = balance;
+                updateButtonsVisibility(balance);
             } else {
                 balanceElement.textContent = '0';
-                voteButton.disabled = true;
+                updateButtonsVisibility(0);
             }
         }
     } catch (error) {
