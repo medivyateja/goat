@@ -19,7 +19,6 @@
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "mongodb": "^6.13.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14"
   },

@@ -11,6 +11,16 @@
                     Join the ultimate debate. Hold $GOAT tokens to vote for either Ronaldo or Messi.
                     1 Billion supply. Your token, your voice.
                 </p>
+                <div class="mb-8 max-w-xl mx-auto">
+                    <div class="bg-gray-900/50 p-4 rounded-full flex items-center justify-between gap-4">
+                        <div class="text-gray-400 font-mono overflow-hidden text-ellipsis" id="contract-address">
+                            <%= process.env.GOAT_TOKEN_MINT_ADDRESS %>
+                        </div>
+                        <button onclick="copyAddress()" class="px-4 py-2 rounded-full bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors flex items-center gap-2">
+                            <span id="copy-text">Copy Address</span>
+                        </button>
+                    </div>
+                </div>
                 <div class="flex gap-4 justify-center">
                     <a href="#how-to-buy" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
                         Buy $GOAT
@@ -21,6 +31,20 @@
                 </div>
             </div>
         </div>
+        <script>
+            function copyAddress() {
+                const address = document.getElementById('contract-address').innerText;
+                navigator.clipboard.writeText(address);
+                
+                const copyText = document.getElementById('copy-text');
+                const originalText = copyText.innerText;
+                copyText.innerText = 'Copied!';
+                
+                setTimeout(() => {
+                    copyText.innerText = originalText;
+                }, 2000);
+            }
+        </script>
     </section>
 
 

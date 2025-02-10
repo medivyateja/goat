@@ -6,7 +6,8 @@ router.get('/', (req, res) => {
     res.render('index', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
-        title: "Who's the GOAT?"
+        title: "Who's the GOAT?",
+        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS || 'Contract address not available'
     });
 });
 
@@ -14,6 +15,7 @@ router.get('/monitor', (req, res) => {
     res.render('monitor', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
+        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS
     });
 });
 
@@ -21,6 +23,7 @@ router.get('/download-app', (req, res) => {
     res.render('download-app', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
+        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS
     });
 });
 
@@ -35,12 +38,11 @@ router.get('/session-info', (req, res) => {
 
 // Get voting stats
 router.get('/voting-stats', (req, res) => {
-    // In a real application, you would fetch this from a database
     res.json({
         success: true,
         stats: {
-            ronaldo: 45, // Example percentage
-            messi: 55    // Example percentage
+            ronaldo: 45,
+            messi: 55
         }
     });
 });
