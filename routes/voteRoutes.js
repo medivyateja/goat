@@ -270,4 +270,30 @@ router.get('/user-history/:wallet', async (req, res) => {
     }
 });
 
+// Get all votes
+router.get('/all-votes', async (req, res) => {
+    try {
+        const usersDir = path.join(__dirname, '../users');
+        const files = await fs.readdir(usersDir);
+        let allVotes = [];
+        
+        for (const file of files) {
+            const userData = await fs.readFile(path.join(usersDir, file), 'utf8');
+            const user = JSON.parse(userData);
+            allVotes = allVotes.concat(user.votes || []);
+        }
+        
+        // Sort by timestamp descending (most recent first)
+        allVotes.sort((a, b) => b.timestamp - a.timestamp);
+        
+        res.json(allVotes);
+    } catch (error) {
+        console.error('Error getting all votes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get votes'
+        });
+    }
+});
+
 module.exports = router;

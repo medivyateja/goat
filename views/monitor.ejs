@@ -1,50 +1,209 @@
-<%- include('partials/header-2', {title: "Who's the GOAT?"}) %>
+<%- include('partials/header-2', {title: "GOAT Vote Monitor"}) %>
 
     <!-- Hero Section -->
     <section id="hero" class="pt-32 pb-16 relative">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 relative">
             <div class="text-center">
                 <h1 class="text-5xl md:text-7xl font-bold mb-6 text-white">
-                    Who's the <span class="text-red-600">GOAT</span>?
+                    Live <span class="text-red-600">Vote</span> Monitor
                 </h1>
                 <p class="text-xl text-white mb-8 max-w-2xl mx-auto">
-                    Join the ultimate debate. Hold $GOAT tokens to vote for either Ronaldo or Messi.
-                    1 Billion supply. Your token, your voice.
+                    Track all votes in real-time. See the latest community choices and voting trends.
                 </p>
-                <div class="flex gap-4 justify-center">
-                    <a href="#how-to-buy" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
-                        Buy $GOAT
-                    </a>
-                    <a href="#vote" class="px-8 py-3 rounded-full border-2 border-red-600 text-white font-semibold hover:bg-red-600/10 transition-colors">
-                        Cast Your Vote
-                    </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <!-- Vote Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <!-- Ronaldo Stats -->
+                <div class="p-8 rounded-2xl bg-blue-900/50 text-center transform hover:scale-105 transition-all">
+                    <h3 class="text-2xl text-white font-bold mb-2">Ronaldo</h3>
+                    <p class="text-5xl font-bold text-red-500" id="ronaldo-votes">0</p>
+                    <p class="text-gray-400 mt-2">votes</p>
+                </div>
+                
+                <!-- Total Stats -->
+                <div class="p-8 rounded-2xl bg-red-900/50 text-center transform hover:scale-105 transition-all">
+                    <h3 class="text-2xl text-white font-bold mb-2">Total Votes</h3>
+                    <p class="text-5xl font-bold text-white" id="total-votes">0</p>
+                    <p class="text-gray-400 mt-2">from all users</p>
+                </div>
+                
+                <!-- Messi Stats -->
+                <div class="p-8 rounded-2xl bg-blue-900/50 text-center transform hover:scale-105 transition-all">
+                    <h3 class="text-2xl text-white font-bold mb-2">Messi</h3>
+                    <p class="text-5xl font-bold text-red-500" id="messi-votes">0</p>
+                    <p class="text-gray-400 mt-2">votes</p>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-16 hidden">
+                <div class="h-8 bg-gray-800 rounded-full overflow-hidden shadow-lg">
+                    <div class="h-full bg-gradient-to-r from-blue-600 to-red-600 transition-all duration-500" id="vote-ratio" style="width: 50%"></div>
+                </div>
+                <div class="flex justify-between mt-2 text-sm text-gray-400">
+                    <span id="ronaldo-percentage">50%</span>
+                    <span id="messi-percentage">50%</span>
+                </div>
+            </div>
+            
+            <!-- Vote Feed -->
+            <div class="bg-blue-900/20 rounded-2xl p-8">
+                <h2 class="text-3xl text-white font-bold mb-8">Recent Votes</h2>
+                <div class="space-y-4" id="vote-feed">
+                    <!-- Vote entries will be populated here -->
+                    <div class="text-center text-gray-400">Loading votes...</div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="mt-8 flex justify-between items-center">
+                    <button id="prev-page" class="px-6 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Previous Page
+                    </button>
+                    <span id="page-info" class="text-lg text-gray-400">Page 1</span>
+                    <button id="next-page" class="px-6 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Next Page
+                    </button>
                 </div>
             </div>
         </div>
     </section>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script>
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allVotes = [];
 
+        // Format wallet address
+        function formatWallet(wallet) {
+            return wallet.slice(0, 6) + '...' + wallet.slice(-4);
+        }
 
-    <section id="community" class="py-24">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <h2 class="text-4xl font-bold text-center mb-12 text-white">Join Our Community</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <a href="https://x.com/ronaldoamessi" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
-                    <h3 class="text-xl font-bold text-white mb-4">Twitter</h3>
-                    <p class="text-gray-300">Follow us for the latest updates</p>
-                </a>
-                <a href="https://t.me/goat7v10" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
-                    <h3 class="text-xl font-bold text-white mb-4">Telegram</h3>
-                    <p class="text-gray-300">Join our active community</p>
-                </a>
-                <a href="https://discord.gg/WYNJkfbK" class="p-6 rounded-2xl border-theme bg-blue-900 hover:bg-blue-900/80 transition-all">
-                    <h3 class="text-xl font-bold text-white mb-4">Discord</h3>
-                    <p class="text-gray-300">Participate in discussions</p>
-                </a>
-            </div>
-        </div>
-    </section>
+        // Format GOAT balance
+        function formatBalance(balance) {
+            return new Intl.NumberFormat('en-US', {
+                maximumFractionDigits: 2
+            }).format(balance);
+        }
 
-   
+        // Create vote entry HTML
+        function createVoteEntry(vote) {
+            const choiceColor = vote.choice === 'ronaldo' ? 'text-blue-400' : 'text-red-400';
+            return `
+                <div class="bg-gray-800/50 rounded-xl p-6 hover:bg-gray-800/70 transition-colors">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-mono text-gray-400">${formatWallet(vote.wallet)}</span>
+                            <p class="mt-2 text-white">Voted for <span class="${choiceColor} font-bold">${vote.choice.toUpperCase()}</span></p>
+                            <p class="text-sm text-gray-400 mt-1">${moment(vote.timestamp).fromNow()}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-400">Balance</p>
+                            <p class="font-mono text-white">${formatBalance(vote.goatBalance)} GOAT</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update vote feed
+        function updateVoteFeed(votes) {
+            const feed = document.getElementById('vote-feed');
+            if (votes.length === 0) {
+                feed.innerHTML = '<div class="text-center text-gray-400">No votes found</div>';
+                return;
+            }
+            feed.innerHTML = votes.map(createVoteEntry).join('');
+        }
+
+        // Update stats
+        function updateStats(stats) {
+    // Get elements
+    const ronaldoVotes = document.getElementById('ronaldo-votes');
+    const messiVotes = document.getElementById('messi-votes');
+    const totalVotes = document.getElementById('total-votes');
+    const voteRatio = document.getElementById('vote-ratio');
+    const ronaldoPercentage = document.getElementById('ronaldo-percentage');
+    const messiPercentage = document.getElementById('messi-percentage');
+    
+    // Update vote counts
+    ronaldoVotes.textContent = stats.ronaldo.votes;
+    messiVotes.textContent = stats.messi.votes;
+    totalVotes.textContent = stats.totalVotes;
+    
+    // Calculate and update percentages
+    const ronaldoPercent = parseFloat(stats.ronaldo.percentage);
+    voteRatio.style.width = `${ronaldoPercent}%`;
+    ronaldoPercentage.textContent = `${ronaldoPercent}%`;
+    messiPercentage.textContent = `${(100 - ronaldoPercent).toFixed(1)}%`;
+}
+
+        // Fetch and update data
+        async function fetchData() {
+    try {
+        const [statsRes, votesRes] = await Promise.all([
+            fetch('/vote/voting-stats'),
+            fetch('/vote/all-votes')
+        ]);
+        
+        const statsData = await statsRes.json();
+        if (!statsData.success) {
+            throw new Error('Failed to fetch stats');
+        }
+        
+        const votes = await votesRes.json();
+        updateStats(statsData.stats);
+        allVotes = votes;
+        updatePagination();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        document.getElementById('vote-feed').innerHTML = 
+            '<div class="text-center text-red-400">Error loading votes. Please try again later.</div>';
+    }
+}
+
+        // Pagination
+        function updatePagination() {
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const pageVotes = allVotes.slice(startIdx, endIdx);
+            
+            updateVoteFeed(pageVotes);
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${Math.ceil(allVotes.length / itemsPerPage)}`;
+            
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = endIdx >= allVotes.length;
+        }
+
+        // Event listeners
+        document.getElementById('prev-page').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', () => {
+            const maxPage = Math.ceil(allVotes.length / itemsPerPage);
+            if (currentPage < maxPage) {
+                currentPage++;
+                updatePagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        // Initial load
+        fetchData();
+        
+        // Refresh data every 30 seconds
+        setInterval(fetchData, 30000);
+    </script>
 
 <%- include('partials/footer-2') %>

@@ -5,6 +5,8 @@ class WalletManager {
         this.publicKey = null;
         this.dropdownActive = false;
         this.lastClickTime = 0;
+        this.timerInterval = null;
+        this.votingEnabled = false;
         this.init();
     }
 
@@ -127,7 +129,6 @@ class WalletManager {
                     </div>
                 `;
             } else {
-                // Simplified mobile wallet info without owner and tokens
                 this.mobileWalletInfo.innerHTML = `
                     <div class="py-2 space-y-2">
                         <div class="text-gray-300 text-sm">Wallet Address:</div>
@@ -145,7 +146,6 @@ class WalletManager {
             const resp = await this.provider.connect({ onlyIfTrusted: true });
             await this.handleConnection(resp.publicKey.toString());
         } catch (error) {
-            // Not previously connected, ignore error
             console.log('No previous connection found');
         }
     }
@@ -192,11 +192,7 @@ class WalletManager {
             });
 
             const data = await response.json();
-            
-            if (data.success) {
-                return data.accountInfo;
-            }
-            return null;
+            return data.success ? data.accountInfo : null;
         } catch (error) {
             console.error('Error getting account info:', error);
             this.updateMobileWalletInfo('Error getting account info', true);
@@ -224,10 +220,10 @@ class WalletManager {
         // Get and display balance
         await this.updateBalance();
         
-        // Get additional account information for desktop only
+        // Get additional account information
         const accountInfo = await this.getAccountInfo();
         
-        // Update Mobile UI with simplified information
+        // Update Mobile UI
         this.updateMobileWalletInfo({
             address: this.publicKey,
             balance: this.balanceElement?.textContent || '0 SOL'
@@ -236,45 +232,124 @@ class WalletManager {
         if (this.mobileConnectButton) {
             this.mobileConnectButton.textContent = 'Disconnect Wallet';
         }
+
+        // Update voting elements
+        await this.updateVotingElements();
         
-        // Setup disconnect handler
+        // Setup wallet event handlers
         this.provider.on('disconnect', () => this.handleDisconnect());
-        this.provider.on('accountChanged', (publicKey) => {
+        this.provider.on('accountChanged', async (publicKey) => {
             if (publicKey) {
-                this.handleConnection(publicKey.toString());
+                await this.handleConnection(publicKey.toString());
             } else {
                 this.handleDisconnect();
             }
         });
     }
 
-    handleDisconnect() {
-        this.publicKey = null;
+    async updateVotingElements() {
+        if (!this.publicKey) return;
+
+        try {
+            // Check voting eligibility
+            const eligibilityResponse = await fetch(`/vote/can-vote?wallet=${this.publicKey}`);
+            const eligibilityData = await eligibilityResponse.json();
+            
+            if (eligibilityData.success) {
+                // Update user's total votes
+                const userTotalVotes = document.getElementById('userTotalVotes');
+                if (userTotalVotes) {
+                    userTotalVotes.textContent = eligibilityData.totalVotes.toLocaleString();
+                }
+
+                // Handle voting status and timer
+                this.votingEnabled = eligibilityData.canVote;
+                const voteButton = document.getElementById('voteButton');
+                const cooldownTimer = document.getElementById('cooldownTimer');
+                const votingButtons = document.getElementById('votingButtons');
+
+                if (voteButton && cooldownTimer) {
+                    if (this.votingEnabled) {
+                        voteButton.textContent = 'Cast Your Vote';
+                        voteButton.disabled = false;
+                        cooldownTimer.classList.add('hidden');
+                    } else {
+                        voteButton.disabled = true;
+                        this.updateTimer(eligibilityData.nextVoteTime);
+                    }
+                }
+
+                // Reset voting buttons
+                if (votingButtons) votingButtons.classList.add('hidden');
+                if (voteButton) voteButton.classList.remove('hidden');
+            }
+
+            // Update global stats
+            const statsResponse = await fetch('/vote/voting-stats');
+            const statsData = await statsResponse.json();
+            
+            if (statsData.success) {
+                this.updateVotingStats(statsData.stats);
+            }
+        } catch (error) {
+            console.error('Error updating voting elements:', error);
+        }
+    }
+
+    updateTimer(nextVoteTime) {
+        clearInterval(this.timerInterval);
+        const timerDisplay = document.getElementById('timerDisplay');
+        const cooldownTimer = document.getElementById('cooldownTimer');
+
+        const updateDisplay = () => {
+            const now = Date.now();
+            const timeLeft = nextVoteTime - now;
+
+            if (timeLeft <= 0) {
+                clearInterval(this.timerInterval);
+                cooldownTimer.classList.add('hidden');
+                this.checkVotingEligibility();
+                return;
+            }
+
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            cooldownTimer.classList.remove('hidden');
+        };
+
+        updateDisplay();
+        this.timerInterval = setInterval(updateDisplay, 1000);
+    }
+
+    updateVotingStats(stats) {
+        // Update Ronaldo stats
+        const ronaldoElements = {
+            percentage: document.getElementById('ronaldoPercentage'),
+            votes: document.getElementById('ronaldoVotes'),
+            progress: document.getElementById('ronaldoProgress')
+        };
         
-        // Reset Desktop UI
-        if (this.walletContainer) {
-            this.walletContainer.classList.remove('connected');
-        }
-        if (this.walletAddress) {
-            this.walletAddress.textContent = '';
-        }
-        if (this.balanceElement) {
-            this.balanceElement.textContent = '0 SOL';
-        }
-        if (this.dropdownWalletInfo) {
-            this.dropdownWalletInfo.textContent = '';
-        }
-        if (this.dropdownBalance) {
-            this.dropdownBalance.textContent = '';
-        }
+        if (ronaldoElements.percentage) ronaldoElements.percentage.textContent = `${stats.ronaldo.percentage}%`;
+        if (ronaldoElements.votes) ronaldoElements.votes.textContent = `${stats.ronaldo.votes.toLocaleString()} votes`;
+        if (ronaldoElements.progress) ronaldoElements.progress.style.width = `${stats.ronaldo.percentage}%`;
         
-        // Reset Mobile UI
-        this.updateMobileWalletInfo('');
-        if (this.mobileConnectButton) {
-            this.mobileConnectButton.textContent = 'Connect Wallet';
-        }
+        // Update Messi stats
+        const messiElements = {
+            percentage: document.getElementById('messiPercentage'),
+            votes: document.getElementById('messiVotes'),
+            progress: document.getElementById('messiProgress')
+        };
         
-        this.closeDropdown();
+        if (messiElements.percentage) messiElements.percentage.textContent = `${stats.messi.percentage}%`;
+        if (messiElements.votes) messiElements.votes.textContent = `${stats.messi.votes.toLocaleString()} votes`;
+        if (messiElements.progress) messiElements.progress.style.width = `${stats.messi.percentage}%`;
+        
+        // Update total votes
+        const totalVotes = document.getElementById('totalVotes');
+        if (totalVotes) totalVotes.textContent = stats.totalVotes.toLocaleString();
     }
 
     async updateBalance() {
@@ -306,19 +381,63 @@ class WalletManager {
         }
     }
 
+    handleDisconnect() {
+        this.publicKey = null;
+        
+        // Reset Desktop UI
+        this.resetUI();
+        
+        // Reset voting elements
+        this.resetVotingElements();
+        
+        this.closeDropdown();
+    }
+
+    resetUI() {
+        if (this.walletContainer) this.walletContainer.classList.remove('connected');
+        if (this.walletAddress) this.walletAddress.textContent = '';
+        if (this.balanceElement) this.balanceElement.textContent = '0 SOL';
+        if (this.dropdownWalletInfo) this.dropdownWalletInfo.textContent = '';
+        if (this.dropdownBalance) this.dropdownBalance.textContent = '';
+        
+        // Reset Mobile UI
+        this.updateMobileWalletInfo('');
+        if (this.mobileConnectButton) this.mobileConnectButton.textContent = 'Connect Wallet';
+    }
+
+    resetVotingElements() {
+        const elements = {
+            voteButton: document.getElementById('voteButton'),
+            cooldownTimer: document.getElementById('cooldownTimer'),
+            votingButtons: document.getElementById('votingButtons'),
+            userTotalVotes: document.getElementById('userTotalVotes')
+        };
+        
+        if (elements.voteButton) {
+            elements.voteButton.disabled = true;
+            elements.voteButton.classList.remove('hidden');
+        }
+        if (elements.cooldownTimer) elements.cooldownTimer.classList.add('hidden');
+        if (elements.votingButtons) elements.votingButtons.classList.add('hidden');
+        if (elements.userTotalVotes) elements.userTotalVotes.textContent = '0';
+        
+        this.votingEnabled = false;
+        clearInterval(this.timerInterval);
+    }
+ 
     shortenAddress(address) {
         return `${address.slice(0, 4)}...${address.slice(-4)}`;
     }
-}
-
-// Initialize wallet manager when document loads
-document.addEventListener('DOMContentLoaded', () => {
+ }
+ 
+ // Initialize wallet manager
+ document.addEventListener('DOMContentLoaded', () => {
     window.walletManager = new WalletManager();
-});
-
-// Handle page visibility changes to refresh wallet state
-document.addEventListener('visibilitychange', () => {
+ });
+ 
+ // Handle page visibility
+ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && window.walletManager) {
         window.walletManager.checkConnection();
     }
-});
+ });
