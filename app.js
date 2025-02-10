@@ -3,6 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const sessionRoutes = require('./routes/sessionRoutes');
 const walletRoutes = require('./routes/walletRoutes');
+const voteRoutes = require('./routes/voteRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -45,6 +46,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/', sessionRoutes);
 app.use('/wallet', walletRoutes);
+app.use('/vote', voteRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

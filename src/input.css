@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile Wallet Styles */
 #mobileWalletInfo {
     transition: all 0.3s ease;
 }
@@ -28,4 +29,61 @@
 /* Error state styles */
 .wallet-error {
     color: #EF4444;
+}
+
+/* Notification Animation Styles */
+#flash-message {
+    transition: transform 0.3s ease-out;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+}
+
+.animate-slide-out {
+    animation: slideOut 0.5s ease-in forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translate(100%, 0); }
+    to { transform: translate(0, 0); }
+}
+
+@keyframes slideOut {
+    from { transform: translate(0, 0); }
+    to { transform: translate(100%, 0); }
+}
+
+/* Notification Container */
+.notification-container {
+    position: fixed;
+    top: 24px;
+    right: 0;
+    transform: translateX(100%);
+    z-index: 50;
+}
+
+/* Notification Content */
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px 0 0 9999px;
+    background-color: #1a365d;
+    border: 1px solid #DC2626;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: white;
+}
+
+.notification-content.success {
+    border-color: #10B981;
+}
+
+.notification-content.error {
+    border-color: #DC2626;
+}
+
+/* Notification Text */
+.notification-text {
+    font-weight: 600;
 }

@@ -2,12 +2,15 @@ const express = require('express');
 const router = express.Router();
 
 // Main page route
+// Main page route in sessionRoutes.js
 router.get('/', (req, res) => {
     res.render('index', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
         title: "Who's the GOAT?",
-        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS || 'Contract address not available'
+        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS || 'Contract address not available',
+        sessionID: req.sessionID,
+        VOTING_COOLDOWN: 24 * 60 * 60 * 1000 // 24 hours in milliseconds
     });
 });
 
@@ -15,7 +18,6 @@ router.get('/monitor', (req, res) => {
     res.render('monitor', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
-        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS
     });
 });
 
@@ -23,7 +25,6 @@ router.get('/download-app', (req, res) => {
     res.render('download-app', {
         visitCount: req.session.visitCount,
         lastVisit: req.session.lastVisit,
-        contractAddress: process.env.GOAT_TOKEN_MINT_ADDRESS
     });
 });
 
@@ -36,15 +37,5 @@ router.get('/session-info', (req, res) => {
     });
 });
 
-// Get voting stats
-router.get('/voting-stats', (req, res) => {
-    res.json({
-        success: true,
-        stats: {
-            ronaldo: 45,
-            messi: 55
-        }
-    });
-});
 
 module.exports = router;

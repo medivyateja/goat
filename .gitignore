@@ -98,3 +98,7 @@ pids/
 .serverless/
 .fusebox/
 .dynamodb/
+
+# Project specific
+data/
+users/

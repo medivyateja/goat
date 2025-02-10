@@ -1,3 +1,4 @@
+<!-- vote.ejs - Partial template -->
 <section id="vote" class="py-24 bg-red-600/5 border-y-2 border-red-600">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <h2 class="text-4xl font-bold text-center mb-12 text-white">Cast Your Vote</h2>
@@ -9,10 +10,10 @@
                 </div>
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">Cristiano Ronaldo</h3>
                 <div class="flex flex-col items-center">
-                    <div class="text-white text-4xl font-bold mb-2">45%</div>
-                    <div class="text-gray-300 text-lg mb-4">56,055 votes</div>
+                    <div id="ronaldoPercentage" class="text-white text-4xl font-bold mb-2">0%</div>
+                    <div id="ronaldoVotes" class="text-gray-300 text-lg mb-4">0 votes</div>
                     <div class="w-full bg-blue-950 rounded-full h-4">
-                        <div class="bg-red-600 h-4 rounded-full" style="width: 45%"></div>
+                        <div id="ronaldoProgress" class="bg-red-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -24,16 +25,26 @@
                 </div>
                 <h3 class="text-2xl font-bold text-white mb-6 text-center">Lionel Messi</h3>
                 <div class="flex flex-col items-center">
-                    <div class="text-white text-4xl font-bold mb-2">55%</div>
-                    <div class="text-gray-300 text-lg mb-4">68,512 votes</div>
+                    <div id="messiPercentage" class="text-white text-4xl font-bold mb-2">0%</div>
+                    <div id="messiVotes" class="text-gray-300 text-lg mb-4">0 votes</div>
                     <div class="w-full bg-blue-950 rounded-full h-4">
-                        <div class="bg-red-600 h-4 rounded-full" style="width: 55%"></div>
+                        <div id="messiProgress" class="bg-red-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="mt-8 text-center">
-            <div class="text-white text-xl mb-6">Total Votes: <span class="font-bold">124,567</span></div>
+            <div class="text-white text-xl mb-6">Total Votes: <span id="totalVotes" class="font-bold">0</span></div>
+            
+            <!-- User Voting Info -->
+            <div class="text-white text-xl mb-6">
+                Your Total Votes: <span id="userTotalVotes" class="font-bold">0</span>
+            </div>
+
+            <!-- Countdown Timer -->
+            <div id="cooldownTimer" class="text-white text-xl mb-6 hidden">
+                Time until next vote: <span id="timerDisplay" class="font-bold">00:00:00</span>
+            </div>
             
             <!-- GOAT Balance with Loading State -->
             <div class="text-white text-xl mb-6">
@@ -49,10 +60,18 @@
                 </span>
             </div>
 
-            <div class="flex justify-center gap-4">
+            <div class="flex justify-center gap-4 flex-wrap">
                 <button id="voteButton" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                     Cast Your Vote
                 </button>
+                <div id="votingButtons" class="hidden flex justify-center gap-4 mb-2">
+                    <button onclick="castVote('ronaldo')" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
+                        Vote Ronaldo
+                    </button>
+                    <button onclick="castVote('messi')" class="px-8 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">
+                        Vote Messi
+                    </button>
+                </div>
                 <a id="buyGoatButton" href="#how-to-buy" class="hidden px-8 py-3 rounded-full bg-blue-900 border-2 border-red-600 text-white font-semibold hover:bg-blue-700 transition-colors mb-4">
                     Buy $GOAT
                 </a>
@@ -63,8 +82,10 @@
 </section>
 
 <script>
-// Store current wallet address
+const VOTING_COOLDOWN = <%= typeof VOTING_COOLDOWN !== 'undefined' ? VOTING_COOLDOWN : (24 * 60 * 60 * 1000) %>;
 let currentWalletAddress = null;
+let votingEnabled = false;
+let timerInterval;
 
 function isWalletConnected() {
     return window.solana && window.solana.isConnected;
@@ -83,20 +104,185 @@ function resetBalance() {
     document.getElementById('userGoatBalance').textContent = '0';
     document.getElementById('voteButton').disabled = true;
     document.getElementById('buyGoatButton').classList.remove('hidden');
+    document.getElementById('votingButtons').classList.add('hidden');
+    document.getElementById('cooldownTimer').classList.add('hidden');
+    document.getElementById('userTotalVotes').textContent = '0';
+    clearInterval(timerInterval);
     hideLoading();
 }
 
-function updateButtonsVisibility(goatBalance) {
-    const voteButton = document.getElementById('voteButton');
-    const buyGoatButton = document.getElementById('buyGoatButton');
-    
-    if (goatBalance > 0) {
-        voteButton.disabled = false;
-        buyGoatButton.classList.add('hidden');
-    } else {
-        voteButton.disabled = true;
-        buyGoatButton.classList.remove('hidden');
+function updateTimer(nextVoteTime) {
+    clearInterval(timerInterval);
+    const timerDisplay = document.getElementById('timerDisplay');
+    const cooldownTimer = document.getElementById('cooldownTimer');
+
+    function updateDisplay() {
+        const now = Date.now();
+        const timeLeft = nextVoteTime - now;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            cooldownTimer.classList.add('hidden');
+            checkVotingEligibility();
+            return;
+        }
+
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        cooldownTimer.classList.remove('hidden');
     }
+
+    updateDisplay();
+    timerInterval = setInterval(updateDisplay, 1000);
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.id = 'flash-message';
+    notification.className = 'fixed top-24 right-0 transform translate-x-full z-50';
+    
+    const innerDiv = document.createElement('div');
+    innerDiv.className = `bg-blue-900 text-white px-6 py-3 rounded-l-full shadow-lg border border-red-600 flex items-center ${
+        type === 'success' ? 'border-green-500' : 'border-red-500'
+    }`;
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'font-semibold';
+    messageSpan.textContent = message;
+    
+    innerDiv.appendChild(messageSpan);
+    notification.appendChild(innerDiv);
+    document.body.appendChild(notification);
+
+    // Add animation classes
+    setTimeout(() => {
+        notification.classList.add('animate-slide-in');
+    }, 50);
+
+    // Remove notification after delay
+    setTimeout(() => {
+        notification.classList.remove('animate-slide-in');
+        notification.classList.add('animate-slide-out');
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 2000);
+}
+
+async function checkVotingEligibility() {
+    if (!currentWalletAddress) return;
+
+    try {
+        const response = await fetch(`/vote/can-vote?wallet=${currentWalletAddress}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            votingEnabled = data.canVote;
+            const voteButton = document.getElementById('voteButton');
+            document.getElementById('userTotalVotes').textContent = data.totalVotes.toLocaleString();
+            
+            if (data.canVote) {
+                voteButton.textContent = 'Cast Your Vote';
+                voteButton.disabled = false;
+                document.getElementById('cooldownTimer').classList.add('hidden');
+            } else {
+                voteButton.disabled = true;
+                updateTimer(data.nextVoteTime);
+            }
+        }
+    } catch (error) {
+        console.error('Error checking voting eligibility:', error);
+        showNotification('Error checking voting eligibility', 'error');
+    }
+}
+
+async function updateVotingStats() {
+    try {
+        const response = await fetch('/vote/voting-stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update Ronaldo stats with animation
+            const ronaldoPercentage = document.getElementById('ronaldoPercentage');
+            const ronaldoVotes = document.getElementById('ronaldoVotes');
+            const ronaldoProgress = document.getElementById('ronaldoProgress');
+            
+            ronaldoPercentage.textContent = `${data.stats.ronaldo.percentage}%`;
+            ronaldoVotes.textContent = `${data.stats.ronaldo.votes.toLocaleString()} votes`;
+            ronaldoProgress.style.width = `${data.stats.ronaldo.percentage}%`;
+            
+            // Update Messi stats with animation
+            const messiPercentage = document.getElementById('messiPercentage');
+            const messiVotes = document.getElementById('messiVotes');
+            const messiProgress = document.getElementById('messiProgress');
+            
+            messiPercentage.textContent = `${data.stats.messi.percentage}%`;
+            messiVotes.textContent = `${data.stats.messi.votes.toLocaleString()} votes`;
+            messiProgress.style.width = `${data.stats.messi.percentage}%`;
+            
+            // Update total votes
+            document.getElementById('totalVotes').textContent = data.stats.totalVotes.toLocaleString();
+        }
+    } catch (error) {
+        console.error('Error updating voting stats:', error);
+        showNotification('Error updating voting statistics', 'error');
+    }
+}
+
+async function castVote(choice) {
+    if (!currentWalletAddress || !votingEnabled) return;
+
+    const goatBalance = parseFloat(document.getElementById('userGoatBalance').textContent.replace(/,/g, ''));
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localTime = new Date().toISOString();
+    
+    try {
+        const response = await fetch('/vote/cast-vote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                wallet: currentWalletAddress,
+                choice,
+                goatBalance,
+                sessionId: '<%= typeof sessionID !== "undefined" ? sessionID : "" %>',
+                timezone: userTimezone,
+                localTime: localTime
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Vote cast successfully!', 'success');
+            await updateVotingStats();
+            votingEnabled = false;
+            
+            if (data.nextVoteTime) {
+                updateTimer(data.nextVoteTime);
+            }
+            
+            document.getElementById('votingButtons').classList.add('hidden');
+            document.getElementById('voteButton').classList.remove('hidden');
+            await checkVotingEligibility();
+        } else {
+            showNotification(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error casting vote:', error);
+        showNotification('Failed to cast vote. Please try again.', 'error');
+    }
+}
+
+function showVotingButtons() {
+    if (!votingEnabled) return;
+    
+    document.getElementById('voteButton').classList.add('hidden');
+    document.getElementById('votingButtons').classList.remove('hidden');
 }
 
 async function checkWalletChange() {
@@ -123,7 +309,6 @@ async function fetchAndDisplayTokens() {
 
     const walletChanged = await checkWalletChange();
     if (!walletChanged && currentWalletAddress) {
-        // If wallet hasn't changed and we already have an address, don't fetch again
         return;
     }
 
@@ -141,52 +326,112 @@ async function fetchAndDisplayTokens() {
         const data = await response.json();
         
         if (data.success) {
-            // Check for GOAT token
             const goatToken = data.tokens.find(token => 
                 token.mint === '<%= process.env.YOUR_GOAT_TOKEN_MINT_ADDRESS %>'
             );
             
-            // Update GOAT balance display
             const balanceElement = document.getElementById('userGoatBalance');
+            const voteButton = document.getElementById('voteButton');
+            const buyGoatButton = document.getElementById('buyGoatButton');
+            const votingButtons = document.getElementById('votingButtons');
             
             if (goatToken) {
                 const balance = parseFloat(goatToken.balance);
-                balanceElement.textContent = balance;
-                updateButtonsVisibility(balance);
+                balanceElement.textContent = balance.toLocaleString();
+                
+                // Enable voting if user has GOAT tokens
+                if (balance > 0) {
+                    voteButton.disabled = false;
+                    buyGoatButton.classList.add('hidden');
+                } else {
+                    voteButton.disabled = true;
+                    buyGoatButton.classList.remove('hidden');
+                    votingButtons.classList.add('hidden');
+                }
             } else {
                 balanceElement.textContent = '0';
-                updateButtonsVisibility(0);
+                voteButton.disabled = true;
+                buyGoatButton.classList.remove('hidden');
+                votingButtons.classList.add('hidden');
             }
+
+            // Check voting eligibility after getting token balance
+            await checkVotingEligibility();
+            
+            // Update user history
+            await fetchUserHistory();
+        } else {
+            resetBalance();
+            showNotification('Failed to fetch token balance', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
         resetBalance();
+        showNotification('Error fetching token balance', 'error');
     } finally {
         hideLoading();
     }
 }
 
-// Check for wallet changes periodically
-setInterval(fetchAndDisplayTokens, 1000);
+async function fetchUserHistory() {
+    if (!currentWalletAddress) return;
+
+    try {
+        const response = await fetch(`/vote/user-history/${currentWalletAddress}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('userTotalVotes').textContent = data.history.totalVotes.toLocaleString();
+            
+            if (data.history.lastVoteTime) {
+                const nextVoteTime = data.history.lastVoteTime + VOTING_COOLDOWN;
+                if (nextVoteTime > Date.now()) {
+                    updateTimer(nextVoteTime);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching user history:', error);
+        showNotification('Error fetching voting history', 'error');
+    }
+}
+
+// Initialize periodic updates with optimized intervals
+const tokenCheckInterval = setInterval(fetchAndDisplayTokens, 5000); // Every 5 seconds
+const statsUpdateInterval = setInterval(updateVotingStats, 30000); // Every 30 seconds
 
 // Initialize when DOM loads
-document.addEventListener('DOMContentLoaded', fetchAndDisplayTokens);
+document.addEventListener('DOMContentLoaded', () => {
+    fetchAndDisplayTokens();
+    updateVotingStats();
+    document.getElementById('voteButton').onclick = showVotingButtons;
+});
 
 // Listen for wallet connection events
 if (window.solana) {
     window.solana.on('connect', () => {
-        currentWalletAddress = null; // Reset current address to force refresh
+        currentWalletAddress = null;
         fetchAndDisplayTokens();
+        fetchUserHistory();
     });
     
     window.solana.on('disconnect', () => {
         currentWalletAddress = null;
         resetBalance();
+        clearInterval(timerInterval);
     });
 
     window.solana.on('accountChanged', () => {
-        currentWalletAddress = null; // Reset current address to force refresh
+        currentWalletAddress = null;
         fetchAndDisplayTokens();
+        fetchUserHistory();
     });
 }
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+    clearInterval(timerInterval);
+    clearInterval(tokenCheckInterval);
+    clearInterval(statsUpdateInterval);
+});
 </script>
