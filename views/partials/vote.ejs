@@ -42,9 +42,7 @@
             </div>
 
             <!-- Countdown Timer -->
-            <div id="cooldownTimer" class="text-white text-xl mb-6 hidden">
-                Time until next vote: <span id="timerDisplay" class="font-bold">00:00:00</span>
-            </div>
+           
             
             <!-- GOAT Balance with Loading State -->
             <div class="text-white text-xl mb-6">
@@ -105,7 +103,6 @@ function resetBalance() {
     document.getElementById('voteButton').disabled = true;
     document.getElementById('buyGoatButton').classList.remove('hidden');
     document.getElementById('votingButtons').classList.add('hidden');
-    document.getElementById('cooldownTimer').classList.add('hidden');
     document.getElementById('userTotalVotes').textContent = '0';
     clearInterval(timerInterval);
     hideLoading();
@@ -113,26 +110,21 @@ function resetBalance() {
 
 function updateTimer(nextVoteTime) {
     clearInterval(timerInterval);
-    const timerDisplay = document.getElementById('timerDisplay');
-    const cooldownTimer = document.getElementById('cooldownTimer');
-
+    
     function updateDisplay() {
         const now = Date.now();
         const timeLeft = nextVoteTime - now;
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            cooldownTimer.classList.add('hidden');
             checkVotingEligibility();
             return;
         }
 
+        // Keep tracking time but don't update the UI
         const hours = Math.floor(timeLeft / (1000 * 60 * 60));
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        cooldownTimer.classList.remove('hidden');
     }
 
     updateDisplay();
@@ -187,9 +179,9 @@ async function checkVotingEligibility() {
             if (data.canVote) {
                 voteButton.textContent = 'Cast Your Vote';
                 voteButton.disabled = false;
-                document.getElementById('cooldownTimer').classList.add('hidden');
             } else {
                 voteButton.disabled = true;
+                // Still update timer in background but don't show UI
                 updateTimer(data.nextVoteTime);
             }
         }
