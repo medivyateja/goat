@@ -20,6 +20,14 @@ router.get('/monitor', (req, res) => {
         lastVisit: req.session.lastVisit,
     });
 });
+router.get('/monitor-app', (req, res) => {
+    res.render('monitor-app', {
+        visitCount: req.session.visitCount,
+        lastVisit: req.session.lastVisit,
+    });
+});
+
+
 
 router.get('/download-app', (req, res) => {
     res.render('download-app', {
